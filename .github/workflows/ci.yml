@@ -1,0 +1,12 @@
+﻿name: CI
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Ninja
+        run: choco install ninja -y
+      - name: Configure and build
+        shell: pwsh
+        run: cmd.exe /c '"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\Common7\Tools\VsDevCmd.bat" -arch=amd64 && cmake -S . -B build -G "Ninja" && cmake --build build --config Release'

@@ -1,0 +1,3 @@
+C:/dev/my-app/build/CMakeFiles/my_app.dir
+C:/dev/my-app/build/CMakeFiles/edit_cache.dir
+C:/dev/my-app/build/CMakeFiles/rebuild_cache.dir
