@@ -1,4 +1,4 @@
-﻿name: CI
+name: CI
 on:
   push:
   pull_request:
@@ -11,12 +11,28 @@ jobs:
         uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: amd64
+      - name: Setup CMake
+        uses: jwlawson/actions-setup-cmake@v1
+        with:
+          cmake-version: '3.27.0'
+      - name: Ensure Ninja
+        shell: pwsh
+        run: |
+          if (-not (Get-Command ninja -ErrorAction SilentlyContinue)) {
+            $nzip = "$env:TEMP\ninja-win.zip"
+            Invoke-WebRequest -Uri "https://github.com/ninja-build/ninja/releases/latest/download/ninja-win.zip" -OutFile $nzip
+            Expand-Archive -Path $nzip -DestinationPath "$env:RUNNER_TEMP\ninja" -Force
+            $env:PATH = "$env:RUNNER_TEMP\ninja;$env:PATH"
+            Write-Output "Ninja installed to $env:RUNNER_TEMP\ninja"
+          } else {
+            Write-Output "Ninja already available"
+          }
       - name: Configure and build
+        shell: pwsh
         env:
           CMAKE_GENERATOR: Ninja
         run: |
-          rd /s /q build || true
-          mkdir build
-          choco install ninja -y
+          Remove-Item -LiteralPath build -Recurse -Force -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Path build | Out-Null
           cmake -S . -B build -G "%CMAKE_GENERATOR%" -DCMAKE_BUILD_TYPE=Release
           cmake --build build --config Release
