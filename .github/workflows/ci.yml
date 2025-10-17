@@ -19,11 +19,19 @@ jobs:
         shell: pwsh
         run: |
           if (-not (Get-Command ninja -ErrorAction SilentlyContinue)) {
+<<<<<<< HEAD
             $nzip = "$env:TEMP\ninja-win.zip"
             Invoke-WebRequest -Uri "https://github.com/ninja-build/ninja/releases/latest/download/ninja-win.zip" -OutFile $nzip
             Expand-Archive -Path $nzip -DestinationPath "$env:RUNNER_TEMP\ninja" -Force
             $env:PATH = "$env:RUNNER_TEMP\ninja;$env:PATH"
             Write-Output "Ninja installed to $env:RUNNER_TEMP\ninja"
+=======
+             = "C:\Users\Paul\AppData\Local\Temp\ninja-win.zip"
+            Invoke-WebRequest -Uri "https://github.com/ninja-build/ninja/releases/latest/download/ninja-win.zip" -OutFile 
+            Expand-Archive -Path  -DestinationPath "\ninja" -Force
+            C:\Python314\Scripts\;C:\Python314\;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.8\bin;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.8\libnvvp;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\NVIDIA Corporation\Nsight Compute 2022.3.0\;C:\Program Files\dotnet\;C:\Program Files\PowerToys\;C:\ProgramData\chocolatey\bin;C:\Program Files\Git\cmd;C:\Program Files\CMake\bin;C:\Users\Paul\AppData\Local\Microsoft\WindowsApps;C:\Users\Paul\.dotnet\tools = "\ninja;C:\Python314\Scripts\;C:\Python314\;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.8\bin;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.8\libnvvp;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\NVIDIA Corporation\Nsight Compute 2022.3.0\;C:\Program Files\dotnet\;C:\Program Files\PowerToys\;C:\ProgramData\chocolatey\bin;C:\Program Files\Git\cmd;C:\Program Files\CMake\bin;C:\Users\Paul\AppData\Local\Microsoft\WindowsApps;C:\Users\Paul\.dotnet\tools"
+            Write-Output "Ninja installed to \ninja"
+>>>>>>> a49d92e (ci: use setup-cmake and direct ninja install; remove Chocolatey)
           } else {
             Write-Output "Ninja already available"
           }
