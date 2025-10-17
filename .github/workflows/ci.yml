@@ -1,4 +1,4 @@
-name: CI
+﻿name: CI
 on:
   push:
   pull_request:
@@ -20,4 +20,3 @@ jobs:
           choco install ninja -y
           cmake -S . -B build -G "%CMAKE_GENERATOR%" -DCMAKE_BUILD_TYPE=Release
           cmake --build build --config Release
-
