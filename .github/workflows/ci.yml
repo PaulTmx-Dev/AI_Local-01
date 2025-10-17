@@ -5,8 +5,13 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install Ninja
-        run: choco install ninja -y
       - name: Configure and build
-        shell: pwsh
-        run: cmd.exe /c '"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\Common7\Tools\VsDevCmd.bat" -arch=amd64 && cmake -S . -B build -G "Ninja" && cmake --build build --config Release'
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: amd64
+        env:
+          CMAKE_GENERATOR: Ninja
+        run: |
+          choco install ninja -y
+          cmake -S . -B build -G "%CMAKE_GENERATOR%" -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --config Release
