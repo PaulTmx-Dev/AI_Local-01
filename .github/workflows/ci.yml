@@ -31,17 +31,28 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install CMake on Linux
+      - name: Install packages on Linux
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update -y
-          sudo apt-get install -y cmake ninja-build
+          sudo apt-get install -y cmake ninja-build build-essential
         shell: bash
 
-      - name: Install CMake on Windows
+      - name: Install packages on Windows
         if: matrix.os == 'windows-latest'
         run: |
           choco install -y cmake ninja
+          RefreshEnv
+        shell: pwsh
+
+      - name: Create build directory (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: mkdir -p build
+        shell: bash
+
+      - name: Create build directory (Windows)
+        if: matrix.os == 'windows-latest'
+        run: New-Item -ItemType Directory -Force -Path build
         shell: pwsh
 
       - name: Configure CMake (Linux)
@@ -79,3 +90,4 @@ jobs:
         with:
           name: cmake-build-logs-${{ matrix.os }}
           path: build
+
