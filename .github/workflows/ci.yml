@@ -2,9 +2,21 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+      - 'ci/*'
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  actions: read
 
 jobs:
   build:
@@ -12,143 +24,75 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-
+    defaults:
+      run:
+        working-directory: .
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up cache key
-        id: cache_key
-        run: |
-          if [ "${{ runner.os }}" = "Linux" ]; then
-            KEY="${{ runner.os }}-build-$(git rev-parse --short HEAD)-$(sha1sum CMakeLists.txt 2>/dev/null | cut -d' ' -f1 2>/dev/null || echo unknown)"
-            echo "CACHE_KEY=$KEY" >> $GITHUB_OUTPUT
-          else
-            $key = "${{ runner.os }}-build-$((git rev-parse --short HEAD))"
-            Write-Output "CACHE_KEY=$key" >> $env:GITHUB_OUTPUT
-          fi
-        shell: bash
-<<<<<<< HEAD
-        if: matrix.os == 'ubuntu-latest'
-=======
-        if: matrix.os == ''ubuntu-latest''
->>>>>>> dbcee68 (ci: verify stable workflow)
-
-      - name: Set up cache key Windows
-        id: cache_key_win
-        run: |
-          $key = "${{ runner.os }}-build-$(git rev-parse --short HEAD)"
-          echo "CACHE_KEY=$key" >> $env:GITHUB_OUTPUT
-        shell: pwsh
-<<<<<<< HEAD
-        if: matrix.os == 'windows-latest'
-
-      - name: Cache build dependencies (Linux)
-        if: matrix.os == 'ubuntu-latest'
-=======
-        if: matrix.os == ''windows-latest''
-
-      - name: Cache build dependencies (Linux)
-        if: matrix.os == ''ubuntu-latest''
->>>>>>> dbcee68 (ci: verify stable workflow)
-        uses: actions/cache@v4
+      - name: Setup CMake
+        uses: actions/setup-cmake@v3
         with:
-          path: |
-            ~/.cache
-            build
-          key: ${{ steps.cache_key.outputs.CACHE_KEY }}
-          restore-keys: |
-            ${{ runner.os }}-build-
+          cmake-version: '3.27' # choose a stable recent version
 
-      - name: Cache build dependencies (Windows)
-<<<<<<< HEAD
-        if: matrix.os == 'windows-latest'
-=======
-        if: matrix.os == ''windows-latest''
->>>>>>> dbcee68 (ci: verify stable workflow)
-        uses: actions/cache@v4
-        with:
-          path: |
-            C:\Users\runneradmin\AppData\Local\cache
-            build
-          key: ${{ steps.cache_key_win.outputs.CACHE_KEY }}
-          restore-keys: |
-            ${{ runner.os }}-build-
-
-      - name: Install Ninja on Linux
-<<<<<<< HEAD
+      - name: Ensure Ninja available on Linux
         if: matrix.os == 'ubuntu-latest'
-=======
-        if: matrix.os == ''ubuntu-latest''
->>>>>>> dbcee68 (ci: verify stable workflow)
         run: |
-          sudo apt-get update
+          sudo apt-get update -y
           sudo apt-get install -y ninja-build
         shell: bash
 
-      - name: Install Ninja on Windows
-<<<<<<< HEAD
+      - name: Ensure Ninja available on Windows
         if: matrix.os == 'windows-latest'
-=======
-        if: matrix.os == ''windows-latest''
->>>>>>> dbcee68 (ci: verify stable workflow)
-        run: choco install ninja -y
+        run: |
+          choco install -y ninja
         shell: pwsh
 
-      - name: Configure CMake (Linux)
-<<<<<<< HEAD
+      - name: Create build directory
+        run: mkdir -p build
+        shell: bash
         if: matrix.os == 'ubuntu-latest'
-=======
-        if: matrix.os == ''ubuntu-latest''
->>>>>>> dbcee68 (ci: verify stable workflow)
+
+      - name: Create build directory (Windows)
+        run: New-Item -ItemType Directory -Force -Path build
+        shell: pwsh
+        if: matrix.os == 'windows-latest'
+
+      - name: Configure CMake
         run: cmake -S . -B build -G Ninja
         shell: bash
+        if: matrix.os == 'ubuntu-latest'
 
       - name: Configure CMake (Windows)
-<<<<<<< HEAD
-        if: matrix.os == 'windows-latest'
-=======
-        if: matrix.os == ''windows-latest''
->>>>>>> dbcee68 (ci: verify stable workflow)
         run: cmake -S . -B build -G Ninja
         shell: pwsh
+        if: matrix.os == 'windows-latest'
 
-      - name: Build (Linux)
-<<<<<<< HEAD
-        if: matrix.os == 'ubuntu-latest'
-=======
-        if: matrix.os == ''ubuntu-latest''
->>>>>>> dbcee68 (ci: verify stable workflow)
-        run: cmake --build build -- -j$(nproc)
+      - name: Build
+        run: cmake --build build --config Release -- -j
         shell: bash
+        if: matrix.os == 'ubuntu-latest'
 
       - name: Build (Windows)
-<<<<<<< HEAD
-        if: matrix.os == 'windows-latest'
-=======
-        if: matrix.os == ''windows-latest''
->>>>>>> dbcee68 (ci: verify stable workflow)
-        run: cmake --build build -- /m:2
+        run: cmake --build build --config Release -- /m
         shell: pwsh
+        if: matrix.os == 'windows-latest'
 
-      - name: Smoke test (Linux)
-<<<<<<< HEAD
-        if: matrix.os == 'ubuntu-latest'
-=======
-        if: matrix.os == ''ubuntu-latest''
->>>>>>> dbcee68 (ci: verify stable workflow)
-        run: echo "Build succeeded on $RUNNER_OS"
+      - name: Run tests
+        run: |
+          ctest --test-dir build --output-on-failure
         shell: bash
+        if: matrix.os == 'ubuntu-latest'
 
-      - name: Smoke test (Windows)
-<<<<<<< HEAD
+      - name: Run tests (Windows)
+        run: |
+          ctest --test-dir build --output-on-failure
+        shell: pwsh
         if: matrix.os == 'windows-latest'
-        run: Write-Output "Build succeeded on $env:RUNNER_OS"
-        shell: pwsh
 
-=======
-        if: matrix.os == ''windows-latest''
-        run: Write-Output "Build succeeded on $env:RUNNER_OS"
-        shell: pwsh
->>>>>>> dbcee68 (ci: verify stable workflow)
-
+      - name: Upload build logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: cmake-build-logs-${{ matrix.os }}
+          path: build
