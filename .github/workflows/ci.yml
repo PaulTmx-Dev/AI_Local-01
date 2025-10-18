@@ -28,7 +28,11 @@ jobs:
             Write-Output "CACHE_KEY=$key" >> $env:GITHUB_OUTPUT
           fi
         shell: bash
+<<<<<<< HEAD
         if: matrix.os == 'ubuntu-latest'
+=======
+        if: matrix.os == ''ubuntu-latest''
+>>>>>>> dbcee68 (ci: verify stable workflow)
 
       - name: Set up cache key Windows
         id: cache_key_win
@@ -36,10 +40,17 @@ jobs:
           $key = "${{ runner.os }}-build-$(git rev-parse --short HEAD)"
           echo "CACHE_KEY=$key" >> $env:GITHUB_OUTPUT
         shell: pwsh
+<<<<<<< HEAD
         if: matrix.os == 'windows-latest'
 
       - name: Cache build dependencies (Linux)
         if: matrix.os == 'ubuntu-latest'
+=======
+        if: matrix.os == ''windows-latest''
+
+      - name: Cache build dependencies (Linux)
+        if: matrix.os == ''ubuntu-latest''
+>>>>>>> dbcee68 (ci: verify stable workflow)
         uses: actions/cache@v4
         with:
           path: |
@@ -50,7 +61,11 @@ jobs:
             ${{ runner.os }}-build-
 
       - name: Cache build dependencies (Windows)
+<<<<<<< HEAD
         if: matrix.os == 'windows-latest'
+=======
+        if: matrix.os == ''windows-latest''
+>>>>>>> dbcee68 (ci: verify stable workflow)
         uses: actions/cache@v4
         with:
           path: |
@@ -61,45 +76,79 @@ jobs:
             ${{ runner.os }}-build-
 
       - name: Install Ninja on Linux
+<<<<<<< HEAD
         if: matrix.os == 'ubuntu-latest'
+=======
+        if: matrix.os == ''ubuntu-latest''
+>>>>>>> dbcee68 (ci: verify stable workflow)
         run: |
           sudo apt-get update
           sudo apt-get install -y ninja-build
         shell: bash
 
       - name: Install Ninja on Windows
+<<<<<<< HEAD
         if: matrix.os == 'windows-latest'
+=======
+        if: matrix.os == ''windows-latest''
+>>>>>>> dbcee68 (ci: verify stable workflow)
         run: choco install ninja -y
         shell: pwsh
 
       - name: Configure CMake (Linux)
+<<<<<<< HEAD
         if: matrix.os == 'ubuntu-latest'
+=======
+        if: matrix.os == ''ubuntu-latest''
+>>>>>>> dbcee68 (ci: verify stable workflow)
         run: cmake -S . -B build -G Ninja
         shell: bash
 
       - name: Configure CMake (Windows)
+<<<<<<< HEAD
         if: matrix.os == 'windows-latest'
+=======
+        if: matrix.os == ''windows-latest''
+>>>>>>> dbcee68 (ci: verify stable workflow)
         run: cmake -S . -B build -G Ninja
         shell: pwsh
 
       - name: Build (Linux)
+<<<<<<< HEAD
         if: matrix.os == 'ubuntu-latest'
+=======
+        if: matrix.os == ''ubuntu-latest''
+>>>>>>> dbcee68 (ci: verify stable workflow)
         run: cmake --build build -- -j$(nproc)
         shell: bash
 
       - name: Build (Windows)
+<<<<<<< HEAD
         if: matrix.os == 'windows-latest'
+=======
+        if: matrix.os == ''windows-latest''
+>>>>>>> dbcee68 (ci: verify stable workflow)
         run: cmake --build build -- /m:2
         shell: pwsh
 
       - name: Smoke test (Linux)
+<<<<<<< HEAD
         if: matrix.os == 'ubuntu-latest'
+=======
+        if: matrix.os == ''ubuntu-latest''
+>>>>>>> dbcee68 (ci: verify stable workflow)
         run: echo "Build succeeded on $RUNNER_OS"
         shell: bash
 
       - name: Smoke test (Windows)
+<<<<<<< HEAD
         if: matrix.os == 'windows-latest'
         run: Write-Output "Build succeeded on $env:RUNNER_OS"
         shell: pwsh
 
+=======
+        if: matrix.os == ''windows-latest''
+        run: Write-Output "Build succeeded on $env:RUNNER_OS"
+        shell: pwsh
+>>>>>>> dbcee68 (ci: verify stable workflow)
 
