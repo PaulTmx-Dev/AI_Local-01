@@ -31,65 +31,48 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup CMake
-        uses: actions/setup-cmake@v3
-        with:
-          cmake-version: '3.27' # choose a stable recent version
-
-      - name: Ensure Ninja available on Linux
+      - name: Install CMake on Linux
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update -y
-          sudo apt-get install -y ninja-build
+          sudo apt-get install -y cmake ninja-build
         shell: bash
 
-      - name: Ensure Ninja available on Windows
+      - name: Install CMake on Windows
         if: matrix.os == 'windows-latest'
         run: |
-          choco install -y ninja
+          choco install -y cmake ninja
         shell: pwsh
 
-      - name: Create build directory
-        run: mkdir -p build
-        shell: bash
+      - name: Configure CMake (Linux)
         if: matrix.os == 'ubuntu-latest'
-
-      - name: Create build directory (Windows)
-        run: New-Item -ItemType Directory -Force -Path build
-        shell: pwsh
-        if: matrix.os == 'windows-latest'
-
-      - name: Configure CMake
         run: cmake -S . -B build -G Ninja
         shell: bash
-        if: matrix.os == 'ubuntu-latest'
 
       - name: Configure CMake (Windows)
+        if: matrix.os == 'windows-latest'
         run: cmake -S . -B build -G Ninja
         shell: pwsh
-        if: matrix.os == 'windows-latest'
 
-      - name: Build
+      - name: Build (Linux)
+        if: matrix.os == 'ubuntu-latest'
         run: cmake --build build --config Release -- -j
         shell: bash
-        if: matrix.os == 'ubuntu-latest'
 
       - name: Build (Windows)
+        if: matrix.os == 'windows-latest'
         run: cmake --build build --config Release -- /m
         shell: pwsh
-        if: matrix.os == 'windows-latest'
 
-      - name: Run tests
-        run: |
-          ctest --test-dir build --output-on-failure
-        shell: bash
+      - name: Run tests (Linux)
         if: matrix.os == 'ubuntu-latest'
+        run: ctest --test-dir build --output-on-failure
+        shell: bash
 
       - name: Run tests (Windows)
-        run: |
-          ctest --test-dir build --output-on-failure
-        shell: pwsh
         if: matrix.os == 'windows-latest'
+        run: ctest --test-dir build --output-on-failure
+        shell: pwsh
 
       - name: Upload build logs
         uses: actions/upload-artifact@v4
