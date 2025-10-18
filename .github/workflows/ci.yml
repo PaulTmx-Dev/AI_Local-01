@@ -39,5 +39,6 @@ jobs:
         run: |
           Remove-Item -LiteralPath build -Recurse -Force -ErrorAction SilentlyContinue
           New-Item -ItemType Directory -Path build | Out-Null
-          cmake -S . -B build -G "%CMAKE_GENERATOR%" -DCMAKE_BUILD_TYPE=Release
+          cmake -S . -B build -G "Ninja" -DCMAKE_BUILD_TYPE=Release
           cmake --build build --config Release
+
