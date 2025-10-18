@@ -12,11 +12,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        include:
-          - os: ubuntu-latest
-            shell: bash
-          - os: windows-latest
-            shell: pwsh
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -24,16 +20,43 @@ jobs:
       - name: Set up cache key
         id: cache_key
         run: |
-          echo "CACHE_KEY=${{ runner.os }}-build-$(git rev-parse --short HEAD)-$(sha1sum CMakeLists.txt 2>/dev/null | cut -d' ' -f1 2>/dev/null || echo unknown)" >> $GITHUB_OUTPUT
-        shell: ${{ matrix.shell }}
+          if [ "${{ runner.os }}" = "Linux" ]; then
+            KEY="${{ runner.os }}-build-$(git rev-parse --short HEAD)-$(sha1sum CMakeLists.txt 2>/dev/null | cut -d' ' -f1 2>/dev/null || echo unknown)"
+            echo "CACHE_KEY=$KEY" >> $GITHUB_OUTPUT
+          else
+            $key = "${{ runner.os }}-build-$((git rev-parse --short HEAD))"
+            Write-Output "CACHE_KEY=$key" >> $env:GITHUB_OUTPUT
+          fi
+        shell: bash
+        if: matrix.os == 'ubuntu-latest'
 
-      - name: Cache build dependencies
+      - name: Set up cache key Windows
+        id: cache_key_win
+        run: |
+          $key = "${{ runner.os }}-build-$(git rev-parse --short HEAD)"
+          echo "CACHE_KEY=$key" >> $env:GITHUB_OUTPUT
+        shell: pwsh
+        if: matrix.os == 'windows-latest'
+
+      - name: Cache build dependencies (Linux)
+        if: matrix.os == 'ubuntu-latest'
         uses: actions/cache@v4
         with:
           path: |
             ~/.cache
             build
           key: ${{ steps.cache_key.outputs.CACHE_KEY }}
+          restore-keys: |
+            ${{ runner.os }}-build-
+
+      - name: Cache build dependencies (Windows)
+        if: matrix.os == 'windows-latest'
+        uses: actions/cache@v4
+        with:
+          path: |
+            C:\Users\runneradmin\AppData\Local\cache
+            build
+          key: ${{ steps.cache_key_win.outputs.CACHE_KEY }}
           restore-keys: |
             ${{ runner.os }}-build-
 
@@ -46,23 +69,37 @@ jobs:
 
       - name: Install Ninja on Windows
         if: matrix.os == 'windows-latest'
-        run: |
-          choco install ninja -y
+        run: choco install ninja -y
         shell: pwsh
 
-      - name: Configure CMake
-        run: |
-          cmake -S . -B build -G Ninja
-        shell: ${{ matrix.shell }}
+      - name: Configure CMake (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: cmake -S . -B build -G Ninja
+        shell: bash
 
-      - name: Build
-        run: |
-          cmake --build build -- -j$(nproc 2>/dev/null || echo 2)
-        shell: ${{ matrix.shell }}
+      - name: Configure CMake (Windows)
+        if: matrix.os == 'windows-latest'
+        run: cmake -S . -B build -G Ninja
+        shell: pwsh
 
-      - name: Smoke test
-        run: |
-          echo "Build succeeded on $RUNNER_OS"
-        shell: ${{ matrix.shell }}
+      - name: Build (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: cmake --build build -- -j$(nproc)
+        shell: bash
+
+      - name: Build (Windows)
+        if: matrix.os == 'windows-latest'
+        run: cmake --build build -- /m:2
+        shell: pwsh
+
+      - name: Smoke test (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: echo "Build succeeded on $RUNNER_OS"
+        shell: bash
+
+      - name: Smoke test (Windows)
+        if: matrix.os == 'windows-latest'
+        run: Write-Output "Build succeeded on $env:RUNNER_OS"
+        shell: pwsh
 
 
