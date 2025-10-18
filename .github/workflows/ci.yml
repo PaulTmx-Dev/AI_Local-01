@@ -2,12 +2,8 @@ name: CI
 
 on:
   push:
-    branches:
-      - main
-      - 'ci/*'
+    branches: [ main, 'ci/*' ]
   pull_request:
-    branches:
-      - main
   workflow_dispatch:
 
 concurrency:
@@ -31,8 +27,8 @@ jobs:
           RefreshEnv
         shell: pwsh
 
-      - name: Ensure build directory
-        run: New-Item -ItemType Directory -Force -Path build
+      - name: Clean workspace
+        run: Remove-Item -Recurse -Force build -ErrorAction SilentlyContinue
         shell: pwsh
 
       - name: Configure CMake
