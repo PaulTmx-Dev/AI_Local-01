@@ -1,11 +1,38 @@
-- name: Cache build dependencies
-  uses: actions/cache@v4
-  with:
-    path: |
-      ~/.cache
-      build
-    key: ${{ runner.os }}-build-${{ hashFiles('**/CMakeLists.txt') }}-v1
-    restore-keys: |
-      ${{ runner.os }}-build-
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache build dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache
+            build
+          key: ${{ runner.os }}-build-${{ hashFiles('**/CMakeLists.txt') }}-v1
+          restore-keys: |
+            ${{ runner.os }}-build-
+
+      - name: Install Ninja
+        run: sudo apt-get update && sudo apt-get install -y ninja-build
+
+      - name: Configure CMake
+        run: cmake -S . -B build -G Ninja
+
+      - name: Build
+        run: cmake --build build -- -j$(nproc)
+
+      - name: Smoke test
+        run: echo "Build succeeded"
 
 
